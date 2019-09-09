@@ -15,3 +15,6 @@ switchero.if.then=function (x) {
   else
     "moose"
 }
+a = 4
+switchero.if.then(x=a)
+switchero.if.then(x="a")
