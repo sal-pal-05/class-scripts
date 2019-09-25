@@ -22,6 +22,6 @@ d$time = str_c(d$hour,d$min,d$sec, sep = ":")
 
 
 d$datetime = str_c(d$date,d$time, sep =" :")
-d$dateTime = as.POSIXct(strptime(d$datetime, format = "%m/%d/%y %H:%M:%OS", tz="America/New_York")) 
-
+d$datetime = as.POSIXct(strptime(d$datetime, format = "%m/%d/%y %H:%M:%OS", tz="America/New_York")) 
+d$datetime=d$datetime- time.zone.change * 3600
 head(d)
