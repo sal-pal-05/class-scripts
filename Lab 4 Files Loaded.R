@@ -81,16 +81,16 @@ head(c3) # all 5 columns are combined together now.
 #merging data frames, ensuring that observations from one df are connected with observations in the 2nd df correctly (merging two data tables together)
 
 m1=subset(x=f, depth_fac=="Deep", select=c("transect.id", "area_fac"))
-m1$seq=seq(1,nrow(m1),1)
+m1$seq=seq(1,nrow(m1),1) # making a new column to align data
 
 m2=subset(x=f, depth_fac=="Deep", select=c("transect.id","depth_fac", "parcel.length.m", "group"))
-m2$seq=seq(1,nrow(m2),1)
+m2$seq=seq(1,nrow(m2),1)# making nww column
 head(m1)
 head(m2) #"transect.id are present in both dfs m1 and m2 (unique identifier=transect id)
 
 ## merge
 
-mt=merge(x=m1, y=m2, by = c("transect.id"), all.x =T, no.dups = T )
+mt=merge(x=m1, y=m2, by = "seq")
 nrow(m1) + nrow(m2)
 nrow(mt)
 head(mt)
@@ -98,7 +98,7 @@ nrow(mt)
 
 ##Join
 library(dplyr)
-mj=dplyr::right_join(x=m1, y=m2, by= c("transect.id"))
+mj=dplyr::right_join(x=m1, y=m2, by= "seq")
 
 v=seq(5, 20, 0.5)
 v
