@@ -354,14 +354,16 @@ d=read.table(file="ISIIS201405291242.txt", sep="\t", skip=10, header=TRUE, fileE
 
 
 d=read.table(file="ISIIS201405291242.txt", sep="\t", skip=10, header=TRUE, fileEncoding="ISO-8859-1", stringsAsFactors=FALSE,quote="\"", check.names=FALSE, encoding="UTF-8", na.strings="9999.99")
-
+#"\t"=tab unlimited file
+##csv="," and others = empty space
+##"StringsAsFactors=FALSE"= IF YOUUHAVE A FACTOR W DIFFERENT LEVELS, you dont want every level to be treated as a factor.
 d
 
 head(d)
 tail(d, 10)
 # create a proper date n time format
 date=scan(file="ISIIS201405291242.txt", what="character", skip=1, nlines=1, quiet=TRUE)
-# scan isis file and skip one line, look for character frtains and return one line
+# scan isis file and skip one line, look for character strings and return one line
 date #vector named "date" is created and data type is "character"
 date=date[2] #indexing, saying only give us the 2nd part of the "date" vector
 date #now, date only shows us the actual date and doesnt display "Date"  "05/29/14"
@@ -370,22 +372,25 @@ library("stringr") # first load the package you wanna use then you can use the p
 mm=str_sub(string=date, start=1, end=2)
 # look in character string"date" and we want the 1st and 2nd numbers which are"0 and 5" for "05" aka the month
 mm
+typeof(mm) ##character, thus have to change to numeric to do math and apply other time functions)
 dd=str_sub(date, start=4, end=5) #day
-dd
+dd=as.numeric(dd) ##have to convert back to numbers to do math w numbets, otherwise R thinks it is a character
+typeof(dd)
 yy=str_sub(date, start=7, end=8) #year
 yy
 # so the "str_sub" basically tells R to sift through the "date" character string, and look for the start and end, value that you want to pick
 #"05/29/14" has 8 values so to get mm, you will do start=1, end =2, for yy= start=7, end=8 etc.
 
-dateNextDay=str_c(mm,as.character(as.numeric(dd)+1), yy, sep="/")
+dateNextDay=str_c(mm,as.character(dd+1), yy, sep="/")
 # make sure the "dd" is a numeric because youre adding "+1" to it, because you can only do math with a number and not a character
+dateNextDay
 
 head(d)
 str(d$Time)
 
-
+##d$Time  is a string of times
 d$hour=as.numeric(str_sub(d$Time, 1,2)) # making new field called"hour" in the data set "d"
-
+d$hour
 d$minutes=as.numeric(str_sub(d$Time, 4,5))
 # making new field called"minutes" in the data set "d"
 d$seconds=as.numeric(str_sub(d$Time, 7,11)) # making new field called"seconds" in the data set "d"
@@ -393,9 +398,92 @@ head(d)
 
 
 d$date=date
-d$dateTime=str_c(d$date, d$Time, sep="")
-d$dateTime=as.POSIXct(strptime(d$dateTime, format="%m/"))
+d$dateTime=str_c(d$date, d$Time, sep="")##new column w date and time, separated by a blank space
+d$dateTime=as.POSIXct(strptime(d$dateTime, format="%m/%d/%y %H:%M:%OS", 
+tz="America/New_York"))
+##="%m/%d/%y %H:%M:%OS", this has to be exactly like it is in your file, like the spaces and all
+
+
+head(d$dateTime)
+
+d$changetime=format(d$dateTime, tz= "America/Los_Angeles")
+head(d$changetime)
+
 d$constant=NULL
+
+##summarizing and merging
+library(tidyverse)
+library(nutshell)
+
+
+
+##finding the sum 3 ways
+##1=tapply
+a=tapply(X=df$H, INDEX=list(df$teamID),FUN=sum)
+class(a) ##output is an array
+a.df=as.data.frame(a)
+class(a.df)##now the output from tapply has been converted to a "df"
+##2=group_by
+b=df%>%group_by(teamID) %>% summarize (totalHits =sum(H))
+class(b)
+##3=aggregate
+
+c=aggregate(x=df$H, by = list(df$teamID), FUN=sum())
+class(c)
+##aggregate and groupby= output is dataframe
+##tapply output=array
+
+
+##renaming columns in different ways
+
+a2.df=data.frame(tid=row.names(a), mean=as.numeric(a))
+a2.df
+a.df
+colnames(a2.df)[2]="mean2"; colnames (a2.df)[1]="tid1"
+
+
+##merging dataframes
+
+q=data.frame(id=c('a','b','c','d'),num=c(1, 2 ,3 ,4))
+v=data.frame(id=c('a','b','e'),car=c(6, 7 ,8))
+
+#rbind=only merges a and b becuase they are common
+qv=merge(x=q, y=v, by="id")
+qv
+
+#all=T (same as full_join in dplyr)
+qv=merge(x=q, y=v, by="id", all=T) ## the all function merges ALL the data, and puts in "NAs" for spots with no matches
+
+##all.x=T (Left join)
+qv=merge(x=q, y=v, by="id", all.x=T) ##everything in x(q) is included ,and if no matches for y(v)=NA
+qv
+
+##all.y=T (Right join)
+qv=merge(x=q, y=v, by="id", all.y=T)##everything in y(v) is included ,and if no matches for x(q)=NA
+qv
+
+##melt and cast----
+##melt=wide to long
+##cast=wide to long
+library(reshape2)
+
+m=melt(data=df, id.vars=c('teamID'),measure.vars=c('H','AB'))
+head(m)
+m%>% group_by(teamID)%>% summarise(n=n())
+
+
+##spread and gather unique identifiers
+##gather is like melt
+
+g=df%>% group_by(teamID)%>% gather(key= 'hits', 'amount', 16:20) ##only affects columns 16-20
+head(g)
+unique(g$hits)
+
+
+##spread
+sp=g%>% spread(hits, amount)
+names(sp)
+
 
 
 

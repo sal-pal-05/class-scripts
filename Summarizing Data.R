@@ -114,8 +114,13 @@ library(reshape2)
 s.wide= dcast(data = s, value.var= "HR", formula = "lgID" ~"teamID",fun.aggregate = mean)
 s.wide
 
+df=batting.2008
+a=tapply(df$H, list(df$teamID), sum)
+a
+a.df=as.data.frame(a)
+a.df
 
-
+colnames(a.df)[1]="HITS"
 
 
 
