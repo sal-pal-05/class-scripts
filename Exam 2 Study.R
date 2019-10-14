@@ -147,6 +147,37 @@ a.ray
 zxc=a.ray[2,3,2];cxz=a.ray[2,3,1]
 zxc;cxz
 
+fish_e=f[f$area_fac=="East",]
+fish_e
+fish_es=f[f$depth_fac=="Shallow",]
+fishh=cbind
+load(file="fish_data.Rdata")
+z1=subset(x=fish, depth_fac=="Deep", select= c("transect.id","area_fac"))
+z1
+z2=subset(x=fish, depth_fac=="Deep", select= c("parcel.length.m","group"))
+z2
+
+zbind=cbind(z1,z2)
+zbind
+
+s1=subset(x=fish, depth_fac=="Deep", select= c("transect.id","area_fac"))
+s1
+##added "seq" column to s1
+s1$seq=seq(1,nrow(s1),1)
+s1
+
+
+s2=subset(x=fish, depth_fac=="Deep", select= c("parcel.length.m","group"))
+s2$seq=seq(1,nrow(s2),1)
+s2
+
+##merge
+mrge=merge(x=s1,y=s2,by="seq")
+mrge
+
+fish$test1=seq(1,nrow(fish),1)
+fish$test1[4]=NA
+
 
 
 
